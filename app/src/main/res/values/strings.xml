@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">AstroBots</string>
+    <string name="hello_astro">Hi Astro</string>
+    <string name="demo_collection">My Demo</string>
+    <string name="demo_external_activity">Another ext activity</string>
+    <string name="title_activity_astro">Channel List</string>
+    <string name="title_activity_home">Home</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="ASTRO_API_CHANNEL_LIST">http://ams-api.astro.com.my/ams/v3/getChannelList</string>
+</resources>
