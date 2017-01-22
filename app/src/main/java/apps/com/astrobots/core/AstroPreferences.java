@@ -11,5 +11,4 @@ public class AstroPreferences{
     public static final String DEFAULT_FAVORITE_CHANNEL = "DEFAULT_FAV_CHANNEL";
     public static final String DEFAULT_FAVORITE_PROGRAM = "DEFAULT_FAV_PROGRAM";
     public static final String CHANNEL_ID_LIST = "CHANNEL_ID_LIST";
-
 }

@@ -102,7 +102,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
-            // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             tvSigninStatus.setText(String.format("Hello, %s", acct.getDisplayName()));
             mPrefs.putString(AstroPreferences.ASTRO_CURRENT_USER,String.format("%s,%s,%s",acct.getId(),acct.getEmail(),acct.getPhotoUrl()));
@@ -121,9 +120,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
+                        mPrefs.clear();
                         mPrefs.putBoolean(AstroPreferences.LOGIN_STATUS, false);
-                        mPrefs.putString(AstroPreferences.ASTRO_CURRENT_USER,"");
-                        mPrefs.putString(AstroPreferences.USER_ID,"");
                         mPrefs.commit();
                         updateUI(false);
                     }

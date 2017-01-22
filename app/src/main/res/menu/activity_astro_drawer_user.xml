@@ -11,9 +11,20 @@
             android:icon="@drawable/ic_menu_send"
             android:title="Submit Data to Server" />
         <item
+            android:id="@+id/nav_view"
+            android:icon="@drawable/ic_menu_share"
+            android:title="Get Data from Server" />
+
+        <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_manage"
             android:title="Delete Data from Server" />
+
+        <item
+            android:id="@+id/nav_slideshow"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Delete Local Data" />
+
 
     </group>
 

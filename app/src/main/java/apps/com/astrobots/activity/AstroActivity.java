@@ -151,10 +151,6 @@ public class AstroActivity extends AppCompatActivity
         } else if (id == R.id.nav_slideshow) {
             Intent i = new Intent(this,UserActivity.class);
             startActivity(i);
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-            Toast.makeText(this, "You selected Contact Developer" + id, Toast.LENGTH_SHORT).show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

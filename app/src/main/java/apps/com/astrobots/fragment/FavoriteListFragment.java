@@ -120,10 +120,14 @@ public class FavoriteListFragment extends Fragment {
 
         @Override
         protected String doInBackground(String... uri) {
+            Log.d("KENBUG","list -> " + uri[0]);
             String[] channelTitle = settings.getString(uri[0],"").split(",");
+            Log.d("KENBUG","list -> " + channelTitle.toString());
             for(String sstr : channelTitle){
-                if(sstr.length() > 0)
-                mDataset.add(sstr);
+                if(sstr.length() > 0){
+                    Log.d("KENBUG","Appending " + sstr);
+                    mDataset.add(sstr);
+                }
             }
             return settings.getString(uri[0],"");
         }

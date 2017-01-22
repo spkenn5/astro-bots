@@ -112,11 +112,11 @@ public class TVGuideFragment extends Fragment {
                 StringBuilder sb = new StringBuilder();
                 sb.append(mPrefs.getString(currentUser,""));
                 sb.append(",");
-                sb.append(mDataset.get(position).getChannelTitle());
+                sb.append(mDataset.get(position).getProgramTitle());
                 Log.d("APPEND_PROGRAM",sb.toString());
                 mPrefsEditor.putString(currentUser,sb.toString());
                 mPrefsEditor.commit();
-                Toast.makeText(getActivity(),"Saving " + mDataset.get(position).getChannelTitle() + " as your favorite channel", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(),"Saving " + mDataset.get(position).getProgramTitle() + " as your favorite channel", Toast.LENGTH_SHORT).show();
             }
         });
 
