@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -25,6 +26,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Calendar;
@@ -32,6 +35,8 @@ import java.util.TimeZone;
 
 import apps.com.astrobots.R;
 import apps.com.astrobots.adapter.ProgramAdapter;
+import apps.com.astrobots.core.AstroConstants;
+import apps.com.astrobots.core.AstroPreferences;
 import apps.com.astrobots.model.Channel;
 import apps.com.astrobots.model.Program;
 
@@ -41,17 +46,32 @@ import apps.com.astrobots.model.Program;
 
 public class TVGuideFragment extends Fragment {
 
-    public static final String PREFS_NAME = "UsersPrefFile";
     SharedPreferences mPrefs;
     SharedPreferences.Editor mPrefsEditor;
+
     ProgramAdapter mAdapter;
 
+    private String userId;
+    private String currentUser;
+    int sortMode;
+    boolean loginStatus = false;
+
     List<Program> mDataset = new ArrayList<>();
+    List<String> mFavoriteList = new ArrayList<>();
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mPrefs = getActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        this.mPrefs = getActivity().getApplicationContext().getSharedPreferences(AstroPreferences.PREF_FILE, Context.MODE_PRIVATE);
+        this.mPrefsEditor = mPrefs.edit();
+        this.sortMode = mPrefs.getInt(AstroPreferences.ASTRO_DEFAULT_SORT,0);
+        this.loginStatus = mPrefs.getBoolean(AstroPreferences.LOGIN_STATUS,false);
+        if(loginStatus){
+            this.userId = mPrefs.getString(AstroPreferences.USER_ID,"");
+            currentUser = String.format(AstroPreferences.USER_FAVORITE_PROGRAM,userId);
+        }else{
+            currentUser = AstroPreferences.DEFAULT_FAVORITE_PROGRAM;
+        }
     }
 
     @Override
@@ -67,14 +87,14 @@ public class TVGuideFragment extends Fragment {
         String startDate = sdf.format(cal.getTime());
         cal.add(Calendar.HOUR,+3);
         String endDate = sdf.format(cal.getTime());
-        String url = "http://ams-api.astro.com.my/ams/v3/getEvents?channelId=%s&periodStart=%s&periodEnd=%s";
+        String url = "";
         String pass = "";
-        if(mPrefs.contains("channelList")){
-            pass = mPrefs.getString("channelList","");
+        if(mPrefs.contains(AstroPreferences.CHANNEL_ID_LIST)){
+            pass = mPrefs.getString(AstroPreferences.CHANNEL_ID_LIST,"");
             try{
                 startDate = URLEncoder.encode(startDate,"UTF-8");
                 endDate = URLEncoder.encode(endDate,"UTF-8");
-                url = (String.format(url,pass,startDate,endDate));
+                url = (String.format(AstroConstants.TV_GUIDE_API,pass,startDate,endDate));
             }catch(Exception e){
                 Log.e("KENBUG",e.getMessage());
             }
@@ -86,6 +106,19 @@ public class TVGuideFragment extends Fragment {
 
         mAdapter = new ProgramAdapter(getActivity(), mDataset);
         gvProgramList.setAdapter(mAdapter);
+        gvProgramList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(mPrefs.getString(currentUser,""));
+                sb.append(",");
+                sb.append(mDataset.get(position).getChannelTitle());
+                Log.d("APPEND_PROGRAM",sb.toString());
+                mPrefsEditor.putString(currentUser,sb.toString());
+                mPrefsEditor.commit();
+                Toast.makeText(getActivity(),"Saving " + mDataset.get(position).getChannelTitle() + " as your favorite channel", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
     }
@@ -150,9 +183,25 @@ public class TVGuideFragment extends Fragment {
                         program.setChannelTitle(arr.getJSONObject(i).getString("channelTitle"));
                         program.setDisplayTime(arr.getJSONObject(i).getString("displayDateTime"));
                         program.setProgramTitle(arr.getJSONObject(i).getString("programmeTitle"));
+                        JSONObject obj = arr.getJSONObject(i).optJSONObject("contentImage");
+                        if(obj != null){
+                            program.setProgramImage(obj.getString("imageUrl"));
+                        }
                         mDataset.add(program);
                     }
                 }
+                Collections.sort(mDataset, new Comparator<Program>() {
+                    @Override
+                    public int compare(Program o1, Program o2) {
+                        if (sortMode == AstroConstants.SORT_ID) {
+                            return o1.getChannelId().compareTo(o2.getChannelId());
+                        }else if(sortMode == AstroConstants.SORT_NAME){
+                            return o1.getChannelTitle().compareTo(o2.getChannelTitle());
+                        }else{
+                            return o1.getChannelTitle().compareTo(o2.getChannelTitle());
+                        }
+                    }
+                });
                 progress.dismiss();
                 mAdapter.notifyDataSetChanged();
             } catch (Exception e) {

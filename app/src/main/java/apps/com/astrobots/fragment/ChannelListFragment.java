@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -35,34 +37,36 @@ import java.util.List;
 import apps.com.astrobots.MainActivity;
 import apps.com.astrobots.R;
 import apps.com.astrobots.adapter.CardListAdapter;
+import apps.com.astrobots.core.AstroConstants;
+import apps.com.astrobots.core.AstroPreferences;
 import apps.com.astrobots.model.Channel;
 
 public class ChannelListFragment extends Fragment{
     public static final String ARG_SORT = "ARG_SORT";
-    public static final String PREFS_NAME = "UsersPrefFile";
-
 
     private List<Channel> mDataset = new ArrayList<>();
+    private String userId;
     private int mSortMode;
+    private boolean loginStatus = false;
+    private String currentUser;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private SharedPreferences settings;
     private SharedPreferences.Editor mPrefs;
 
-    public static ChannelListFragment newInstance(int page) {
-        Bundle args = new Bundle();
-        args.putInt(ARG_SORT, page);
-        ChannelListFragment fragment = new ChannelListFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mSortMode = getArguments().getInt(ARG_SORT);
-        this.settings = getActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        this.settings = getActivity().getApplicationContext().getSharedPreferences(AstroPreferences.PREF_FILE, Context.MODE_PRIVATE);
+        this.mSortMode = settings.getInt(AstroPreferences.ASTRO_DEFAULT_SORT,AstroConstants.SORT_STB);
+        this.loginStatus = settings.getBoolean(AstroPreferences.LOGIN_STATUS,false);
+        if(loginStatus){
+            this.userId = settings.getString(AstroPreferences.USER_ID,"");
+            currentUser = String.format(AstroPreferences.USER_FAVORITE_CHANNEL,userId);
+        }else{
+            currentUser = AstroPreferences.DEFAULT_FAVORITE_CHANNEL;
+        }
         this.mPrefs = settings.edit();
     }
 
@@ -75,13 +79,17 @@ public class ChannelListFragment extends Fragment{
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        String url = "http://ams-api.astro.com.my/ams/v3/getChannelList";
-        new AstroHttpRequestTask().execute(url);
+        new AstroHttpRequestTask().execute(AstroConstants.CHANNEL_LIST_API);
 
         mAdapter = new CardListAdapter(mDataset, new CardListAdapter.CardListListener() {
             @Override
             public void onClick(int position) {
-                mPrefs.putString("favorite",mDataset.get(position).getChannelTitle());
+                StringBuilder sb = new StringBuilder();
+                sb.append(settings.getString(currentUser,""));
+                sb.append(",");
+                sb.append(mDataset.get(position).getChannelTitle());
+                Log.d("APPEND_CHANNEL",sb.toString());
+                mPrefs.putString(currentUser,sb.toString());
                 mPrefs.commit();
                 Toast.makeText(getActivity(),"Saving " + mDataset.get(position).getChannelTitle() + " as your favorite channel", Toast.LENGTH_SHORT).show();
             }
@@ -95,7 +103,7 @@ public class ChannelListFragment extends Fragment{
 
     public void checkSortingMode() {
         switch (mSortMode) {
-            case 0:
+            case AstroConstants.SORT_STB:
                 Collections.sort(mDataset, new Comparator<Channel>() {
                     @Override
                     public int compare(Channel o1, Channel o2) {
@@ -103,7 +111,7 @@ public class ChannelListFragment extends Fragment{
                     }
                 });
                 break;
-            case 1:
+            case AstroConstants.SORT_NAME:
                 Collections.sort(mDataset, new Comparator<Channel>() {
                     @Override
                     public int compare(Channel o1, Channel o2) {
@@ -111,7 +119,7 @@ public class ChannelListFragment extends Fragment{
                     }
                 });
                 break;
-            case 2:
+            case AstroConstants.SORT_ID:
                 Collections.sort(mDataset, new Comparator<Channel>() {
                     @Override
                     public int compare(Channel o1, Channel o2) {
@@ -123,7 +131,7 @@ public class ChannelListFragment extends Fragment{
                 Collections.sort(mDataset, new Comparator<Channel>() {
                     @Override
                     public int compare(Channel o1, Channel o2) {
-                        return Integer.valueOf(o1.getChannelId()).compareTo(Integer.valueOf(o2.getChannelId()));
+                        return Integer.valueOf(o1.getChannelStbNumber()).compareTo(Integer.valueOf(o2.getChannelStbNumber()));
                     }
                 });
                 break;
@@ -191,7 +199,7 @@ public class ChannelListFragment extends Fragment{
                         channelIdList.add(channel.getChannelId());
                         mDataset.add(channel);
                     }
-                    mPrefs.putString("channelList",channelIdList.toString().replaceAll("[\\[.\\].\\s+]", ""));
+                    mPrefs.putString(AstroPreferences.CHANNEL_ID_LIST,channelIdList.toString().replaceAll("[\\[.\\].\\s+]", ""));
                     mPrefs.commit();
                 }
                 progress.dismiss();

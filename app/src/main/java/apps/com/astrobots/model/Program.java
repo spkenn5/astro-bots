@@ -12,6 +12,15 @@ public class Program {
     public String channelTitle;
     public String displayTime;
     public String programTitle;
+    public String programImage;
+
+    public String getProgramImage() {
+        return programImage;
+    }
+
+    public void setProgramImage(String programImage) {
+        this.programImage = programImage;
+    }
 
     public String getChannelId() {
         return channelId;

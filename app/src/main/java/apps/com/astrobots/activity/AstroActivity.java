@@ -5,16 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -27,17 +23,25 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import apps.com.astrobots.R;
-import apps.com.astrobots.fragment.ChannelMainFragment;
+import apps.com.astrobots.core.AstroPreferences;
+import apps.com.astrobots.fragment.ChannelListFragment;
+import apps.com.astrobots.fragment.SettingsFragment;
 import apps.com.astrobots.fragment.TVGuideFragment;
 
 
 public class AstroActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
-    public static final String PREFS_NAME = "UsersPrefFile";
+        implements NavigationView.OnNavigationItemSelectedListener,GoogleApiClient.OnConnectionFailedListener {
     private SharedPreferences mPref;
     private SharedPreferences.Editor mPreferences;
     private ViewPager mPager;
+
+    GoogleApiClient mGoogleApiClient;
 
     private PagerAdapter mPagerAdapter;
     private TabLayout mTabLayout;
@@ -46,9 +50,18 @@ public class AstroActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
         setContentView(R.layout.activity_astro);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        this.mPref = getSharedPreferences(PREFS_NAME,Context.MODE_PRIVATE);
+        this.mPref = getApplicationContext().getSharedPreferences(AstroPreferences.PREF_FILE,Context.MODE_PRIVATE);
         this.mPreferences = mPref.edit();
 
         setSupportActionBar(toolbar);
@@ -65,15 +78,21 @@ public class AstroActivity extends AppCompatActivity
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                if(mPref.contains("favorite")){
-                    tvFavorite.setText(String.format("Favorite : %s",mPref.getString("favorite","")));
+                if(mPref.contains(AstroPreferences.USER_ID)){
+                    tvFavorite.setText(String.format("USER ID : %s",mPref.getString(AstroPreferences.USER_ID,"")));
                 }else{
-                    tvFavorite.setText("Favorite : N/A");
+                    tvFavorite.setText("User ID : N/A");
                 }
             }
         };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        Fragment cmf = new ChannelListFragment();
+        ft.replace(R.id.content_frame, cmf);
+        ft.commit();
     }
 
     @Override
@@ -102,6 +121,11 @@ public class AstroActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            Fragment fragSettings = new SettingsFragment();
+            ft.replace(R.id.content_frame, fragSettings);
+            ft.commit();
             return true;
         }
 
@@ -115,8 +139,9 @@ public class AstroActivity extends AppCompatActivity
         int id = item.getItemId();
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction ft = fragmentManager.beginTransaction();
+
         if (id == R.id.nav_camera) {
-            Fragment cmf = new ChannelMainFragment();
+            Fragment cmf = new ChannelListFragment();
             ft.replace(R.id.content_frame, cmf);
             ft.commit();
         } else if (id == R.id.nav_gallery) {
@@ -124,7 +149,8 @@ public class AstroActivity extends AppCompatActivity
             ft.replace(R.id.content_frame, tvGuide);
             ft.commit();
         } else if (id == R.id.nav_slideshow) {
-            Toast.makeText(this, "You selected About Astro" + id, Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(this,UserActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
@@ -134,5 +160,15 @@ public class AstroActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Toast.makeText(this,"Connection failed",Toast.LENGTH_SHORT).show();
+    }
+
+    public GoogleApiClient getClient (){
+        return mGoogleApiClient;
     }
 }

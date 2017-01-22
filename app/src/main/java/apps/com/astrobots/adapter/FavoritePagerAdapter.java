@@ -4,22 +4,22 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import apps.com.astrobots.fragment.ChannelListFragment;
+import apps.com.astrobots.fragment.FavoriteListFragment;
 
 /**
  * Created by kenji on 1/21/17.
  */
 
-public class ChannelPagerAdapter extends FragmentPagerAdapter {
-    private String tabTitles[] = new String[] { "Sort by Channel", "Sort by Name", "Sort by ID" };
+public class FavoritePagerAdapter extends FragmentPagerAdapter {
+    private String tabTitles[] = new String[] { "Channel", "Program"};
 
-    public ChannelPagerAdapter(FragmentManager fm, int tabCount) {
+    public FavoritePagerAdapter(FragmentManager fm, int tabCount) {
         super(fm);
     }
 
     @Override
     public Fragment getItem(int position) {
-        return new ChannelListFragment().newInstance(position);
+        return new FavoriteListFragment().newInstance(position);
     }
 
     @Override

@@ -21,6 +21,11 @@
             android:name=".activity.AstroActivity"
             android:label="@string/title_activity_astro"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.UserActivity"
+            android:label="@string/title_activity_astro"
+            android:theme="@style/AppTheme.NoActionBar" />
+
 
     </application>
 

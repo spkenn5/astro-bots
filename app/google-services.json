@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "578572907432",
+    "project_id": "gold-prediction-analytics"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:578572907432:android:f118cc4a85e26682",
+        "android_client_info": {
+          "package_name": "apps.com.astrobots"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "578572907432-ivmai1js7av6rrt4197t96hrvdod1up2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "apps.com.astrobots",
+            "certificate_hash": "D71CB923C6ADFE1C013C01C17C0FF9D8AD687822"
+          }
+        },
+        {
+          "client_id": "578572907432-7l7likmdfsbq31vmvdjca2t60kokg873.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBW-X8pi-oG_MYSyAOrOgZEEvT2_sxR-xc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
